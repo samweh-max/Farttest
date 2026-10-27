@@ -248,11 +248,20 @@ details summary { cursor:pointer; font-weight:600; min-height:32px; }
 .trt-block { padding:8px 0 10px; border-bottom:1px solid var(--line); }
 .trt-block:last-child { border-bottom:0; }
 .trt-block .trt-row { margin-bottom:6px; }
-.app-chips { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+/* quick taps on buttons never trigger double-tap zoom */
+button, .btn, .chip, a, label, input[type=checkbox] { touch-action:manipulation; }
+.app-chips { display:flex; flex-wrap:wrap; gap:12px; align-items:center; }
 .app-chips .lbl { font-size:.8rem; color:var(--muted); margin-right:2px; }
-.app-chips .chip { min-width:40px; font-weight:700; }
+.app-chips .chip { min-width:46px; min-height:42px; font-weight:700; }
 .seg { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px; }
 .seg button.on { background:var(--accent); color:var(--accent-ink); border-color:var(--accent); }
+/* quieter version: a small two-way switch */
+.seg.mini { display:inline-flex; gap:0; border:1px solid var(--line); border-radius:999px; padding:2px; margin-bottom:8px; background:var(--card); }
+.seg.mini button { min-height:34px; padding:.2rem .9rem; border:0; border-radius:999px; font-size:.85rem; font-weight:500; background:transparent; color:var(--muted); }
+.seg.mini button.on { background:var(--accent-soft); color:var(--accent); font-weight:700; }
+.apscope { margin-top:14px; padding-top:12px; border-top:1px solid var(--line); }
+.apscope .ttl { font-size:.85rem; font-weight:600; color:var(--muted); margin-bottom:6px; }
+.visit .vfoot { display:flex; justify-content:flex-end; margin-top:10px; }
 /* signature pad */
 .sigsheet canvas { display:block; width:100%; height:200px; background:#fff; border:2px dashed var(--line); border-radius:10px; touch-action:none; margin:8px 0 12px; }
 .sigsheet .sigbtns { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
@@ -273,7 +282,7 @@ details summary { cursor:pointer; font-weight:600; min-height:32px; }
 </div>
 <script>
 'use strict';
-const APP_VERSION = 26; // keep in step with VERSION in sw.js
+const APP_VERSION = 27; // keep in step with VERSION in sw.js
 /* ---------- storage ---------- */
 const KEY = 'fieldAssessments.v1';
 const app = document.getElementById('app');
@@ -661,7 +670,7 @@ function viewHome() {
       <h3>Backup &amp; Move Between Devices</h3>
       <p class="small muted">All data is saved in this browser on this device. Export a backup regularly, and use Restore to load it on another device.</p>
       <label class="chk small" style="margin-bottom:12px"><input type="checkbox" id="contrast" ${db.settings.contrast ? 'checked' : ''}> ☀ Sunlight mode (high contrast, easier to read outdoors)</label>
-      <label class="chk small" style="margin-bottom:12px"><input type="checkbox" id="arrowbar" ${db.settings.arrowBar ? 'checked' : ''}> Show my own ◀ ▲ ▼ ▶ bar above the keyboard <span class="muted" style="font-weight:400">(iPhone/iPad already have their own arrows above the keyboard; Android always shows mine)</span></label>
+      <label class="chk small" style="margin-bottom:12px"><input type="checkbox" id="arrowbar" ${db.settings.arrowBar ? 'checked' : ''}> Show my own ◀ ▲ ▼ ▶ bar above the keyboard</label>
       <div class="actions">
         <button id="backup">Export Backup (.json)</button>
         <label class="btn">Restore Backup<input type="file" id="restore" accept=".json,application/json" hidden></label>
@@ -669,8 +678,7 @@ function viewHome() {
     </section>
     <section class="card subtle" style="margin-top:16px">
       <h3>Signature</h3>
-      <p class="small muted">Draw it once with your finger. It is added as <b>Signed:</b> at the top right of every page of the PDF and Excel files you export, for assessments done on this device. Assessments done on someone else's device keep their signature.</p>
-      <p class="small ${deviceSig() ? 'rep-ok' : 'muted'}" style="margin-bottom:.6rem">${deviceSig() ? '✓ Signature saved on this device' : 'No signature yet'}</p>
+      <p class="small muted" style="margin-bottom:.6rem">${deviceSig() ? '<span class="rep-ok">✓ Saved.</span> ' : ''}Appears on exported files for every assessment made on this device.</p>
       <button id="sig-edit" type="button">${deviceSig() ? 'Edit Signature' : 'Add Signature'}</button>
     </section>
   </main>`;
@@ -740,7 +748,6 @@ function viewTrialForm(trial) {
       <button class="step" data-st="2" type="button"><b>2</b> Treatments</button>
       <button class="step" data-st="3" type="button"><b>3</b> Plot Layout</button>
     </div>
-    <p class="small muted" style="margin:-6px 0 12px">Saved automatically as you go – you can leave and carry on later.</p>
     <section class="card" data-step="1">
       <h2>Trial Details</h2>
       <div class="grid2">
@@ -1015,7 +1022,6 @@ function viewTrial(t) {
             <div class="small muted">${[a.assessor, a.cropBBCH ? `BBCH ${a.cropBBCH}${(a.cropBBCHMin || a.cropBBCHMax) ? ` (${a.cropBBCHMin || '–'}–${a.cropBBCHMax || '–'})` : ''}` : ''].filter(Boolean).map(esc).join(' · ')}</div></div>
           <div><div class="vicons">
               ${canLock ? `<button class="ibtn ${a.locked ? 'on' : ''}" data-lk="${a.id}" title="${a.locked ? 'Locked – tap to unlock' : 'Lock this date'}" aria-label="${a.locked ? 'Unlock this date' : 'Lock this date'}">${a.locked ? ICON.lock : ICON.unlock}</button>` : ''}
-              ${a.locked ? '' : `<button class="ibtn danger" data-del="${a.id}" title="Delete this date" aria-label="Delete this date">${ICON.trash}</button>`}
             </div>
             <span style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><span class="pill ${status[1]}">${status[0]}</span></span></div>
         </div>
@@ -1031,6 +1037,7 @@ function viewTrial(t) {
           <button data-xp="${a.id}">Export</button>
           ${a.locked ? '' : `<a class="btn" href="#/trial/${t.id}/a/${a.id}/edit">Edit</a>`}
         </div>
+        ${a.locked ? '' : `<div class="vfoot"><button class="ibtn danger" data-del="${a.id}" title="Delete this date" aria-label="Delete this date">${ICON.trash}</button></div>`}
       </section>`;
     }).join('') : `<div class="card empty"><p>No assessment dates yet.</p><a class="btn primary" href="#/trial/${t.id}/a/new">+ New Assessment Date</a></div>`}
 
@@ -1122,8 +1129,6 @@ function viewAssessForm(t, a, startStep) {
       <button class="step" data-st="1" type="button"><b>1</b> Date &amp; Crop Stage</button>
       <button class="step" data-st="2" type="button"><b>2</b> Assessments</button>
     </div>
-    <p class="small muted" style="margin:-6px 0 12px">Saved automatically as you go – you can leave and carry on later.</p>
-
     <div data-step="1">
       <section class="card">
         <h2>Date</h2>
@@ -1131,13 +1136,6 @@ function viewAssessForm(t, a, startStep) {
           <label class="field"><span>Date * <span class="muted" style="font-weight:400">(DD/MM/YYYY)</span></span><input id="a-date" inputmode="numeric" maxlength="10" placeholder="DD/MM/YYYY" value="${esc(d._dateText != null ? d._dateText : dmy(d.date))}" autocomplete="off"></label>
           <label class="field"><span>Assessor</span><input id="a-who" value="${esc(d.assessor)}" placeholder="Initials or name" autocapitalize="characters" autocomplete="off" style="text-transform:uppercase"></label>
         </div>
-        ${t.apps ? `<h3>Applications</h3>
-        <div class="seg"><button type="button" id="ap-all">Assess All Applications</button><button type="button" id="ap-sel">Select Applications to Assess</button></div>
-        <div id="ap-box">
-          <div class="app-chips" id="ap-chips" style="margin-bottom:8px">${appLetters(t.apps).map(L => `<button type="button" class="chip" data-ap="${L}">${L}</button>`).join('')}</div>
-          ${t.untreated ? `<label class="chk small" style="margin-bottom:8px"><input type="checkbox" id="ap-utc"> Also assess the untreated plots (Trt ${t.untreated})</label>` : ''}
-        </div>
-        <p class="small muted" id="ap-info" style="margin-bottom:1rem"></p>` : ''}
         <h3>Crop Growth Stage (BBCH)</h3>
         <div class="grid3">
           <label class="field"><span>Majority *</span><input id="a-bbch" inputmode="numeric" value="${esc(d.cropBBCH || '')}" placeholder="e.g. 32" autocomplete="off"></label>
@@ -1145,6 +1143,15 @@ function viewAssessForm(t, a, startStep) {
           <label class="field"><span>Maximum</span><input id="a-bbch-max" inputmode="numeric" value="${esc(d.cropBBCHMax || '')}" autocomplete="off"></label>
         </div>
         <label class="field" style="margin-bottom:0"><span>Notes</span><input id="a-notes" value="${esc(d.notes)}" placeholder="Weather, conditions…"></label>
+        ${t.apps ? `<div class="apscope">
+          <div class="ttl">Plots to Assess</div>
+          <div class="seg mini"><button type="button" id="ap-all">All Applications</button><button type="button" id="ap-sel">Choose Applications</button></div>
+          <div id="ap-box">
+            <div class="app-chips" id="ap-chips" style="margin-bottom:8px">${appLetters(t.apps).map(L => `<button type="button" class="chip" data-ap="${L}">${L}</button>`).join('')}</div>
+            ${t.untreated ? `<label class="chk small" style="margin-bottom:6px"><input type="checkbox" id="ap-utc"> Include untreated plots (Trt ${t.untreated})</label>` : ''}
+          </div>
+          <p class="small muted" id="ap-info" style="margin:0"></p>
+        </div>` : ''}
       </section>
     </div>
 
@@ -1615,15 +1622,19 @@ function viewEntry(t, a, idx, focusAt, keepScroll) {
 
 /* ---------- box plot (SVG) ---------- */
 function quantile(sorted, q) { const pos = (sorted.length - 1) * q, lo = Math.floor(pos), hi = Math.ceil(pos); return sorted[lo] + (sorted[hi] - sorted[lo]) * (pos - lo); }
-function boxPlotSvg(t, a, ty, sel) { // sel = { plot, t } highlights one point
+function boxPlotSvg(t, a, ty, sel, scale) { // sel = { plot, t } highlights one point; scale 'full' = the whole range of the assessment
   const st = typeStats(t, a, ty);
   const cols = range(t.trts).filter(k => applies(t, ty, k, a)).map(k => { const vals = st.groups[k].vals.filter(v => v.n != null); return { k, vals, v: vals.map(x => x.n).sort((x, y) => x - y) }; });
   const all = cols.flatMap(c => c.v);
   const title = `<h3 style="margin:16px 0 4px">${esc(typeLabel(ty))}</h3>`;
   if (!all.length) return `<div class="bp">${title}<p class="small muted">No values yet.</p></div>`;
   let lo = Math.min(...all), hi = Math.max(...all);
+  if (scale === 'full') { // the set min–max (e.g. 0–100 %); without one, start at 0
+    const num = v => v !== '' && v != null && isFinite(Number(v));
+    lo = Math.min(lo, num(ty.min) ? Number(ty.min) : 0); hi = Math.max(hi, num(ty.max) ? Number(ty.max) : hi);
+  }
   if (lo === hi) { lo -= 1; hi += 1; }
-  const pad = (hi - lo) * 0.08; lo -= pad; hi += pad;
+  const pad = scale === 'full' ? 0 : (hi - lo) * 0.08; lo -= pad; hi += pad;
   const colW = 46, L = 44, T = 10, B = 34, H = 210;
   const W = L + cols.length * colW + 8, plotH = H - T - B;
   const y = v => T + plotH - (v - lo) / (hi - lo) * plotH;
@@ -1676,8 +1687,10 @@ function viewReview(t, a) {
     ${a.locked ? '<section class="card warnbox"><b>🔒 Locked.</b> Values cannot be changed until you unlock this date.</section>' : ''}
     <div class="legend" style="margin-bottom:12px"><span><i class="sw miss"></i>Missing</span><span><i class="sw out"></i>Out of range, not a number, or a rep that is far from the others in its treatment</span></div>
     <section class="card" id="issues"></section>
-    <section class="card"><div class="arow"><div><h2 style="margin:0">Box Plots</h2><span class="small muted">Spread of the reps for each treatment, one chart per assessment.</span></div>
-      <button id="bp-toggle" class="small">Show Box Plots</button></div><div id="bp"></div></section>
+    <section class="card"><div class="arow"><h2 style="margin:0">Box Plots</h2>
+      <button id="bp-toggle" class="small">Show Box Plots</button></div>
+      <div id="bp-scale" hidden style="margin-top:10px"><div class="seg mini" style="margin:0"><button type="button" data-sc="fit">Zoom to Data</button><button type="button" data-sc="full">Full Scale</button></div></div>
+      <div id="bp"></div></section>
     ${a.types.map(ty => `
       <section class="card rv">
         <h2>${esc(typeLabel(ty))}${ty.untreatedOnly ? ' <span class="pill warn">Untreated plots only – enter here</span>' : ''}</h2>
@@ -1703,8 +1716,11 @@ function viewReview(t, a) {
 
   let bpOn = false;
   function drawBoxPlots() {
-    const el = document.getElementById('bp'); if (!bpOn) { el.innerHTML = ''; applySel(); return; }
-    el.innerHTML = a.types.map(ty => boxPlotSvg(t, a, ty, selPt)).join('');
+    const el = document.getElementById('bp'); document.getElementById('bp-scale').hidden = !bpOn;
+    if (!bpOn) { el.innerHTML = ''; applySel(); return; }
+    const sc = db.settings.bpScale === 'full' ? 'full' : 'fit';
+    app.querySelectorAll('[data-sc]').forEach(b => b.classList.toggle('on', b.dataset.sc === sc));
+    el.innerHTML = a.types.map(ty => boxPlotSvg(t, a, ty, selPt, sc)).join('');
     applySel();
   }
   let selPt = null; // the point tapped on a box plot
@@ -1721,6 +1737,7 @@ function viewReview(t, a) {
     selPt = selPt && String(selPt.plot) === c.dataset.plot && selPt.t === c.dataset.t ? null : { plot: c.dataset.plot, t: c.dataset.t };
     drawBoxPlots();
   };
+  app.querySelectorAll('[data-sc]').forEach(b => b.onclick = () => { db.settings.bpScale = b.dataset.sc; save(); drawBoxPlots(); });
   document.getElementById('bp-toggle').onclick = () => { bpOn = !bpOn; if (!bpOn) selPt = null; document.getElementById('bp-toggle').textContent = bpOn ? 'Hide Box Plots' : 'Show Box Plots'; drawBoxPlots(); };
   function refresh() {
     drawBoxPlots();

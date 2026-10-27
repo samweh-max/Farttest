@@ -1,6 +1,6 @@
 // Keeps a copy of the app on the device so it opens with no internet.
 // When you change any app file, bump VERSION so devices pick up the new copy.
-const VERSION = 'v26';
+const VERSION = 'v27';
 const CACHE = 'field-assessments-' + VERSION;
 const FILES = ['./index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
